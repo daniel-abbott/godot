@@ -2376,8 +2376,8 @@ SpatialMaterial::SpatialMaterial() :
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = 0;
 	}
-	diffuse_mode = DIFFUSE_BURLEY;
-	specular_mode = SPECULAR_SCHLICK_GGX;
+	diffuse_mode = DIFFUSE_LAMBERT;
+	specular_mode = SPECULAR_DISABLED;
 
 	for (int i = 0; i < FEATURE_MAX; i++) {
 		features[i] = false;
