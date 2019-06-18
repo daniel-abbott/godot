@@ -2319,7 +2319,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		} break;
 		case FILE_EXPLORE_ANDROID_BUILD_TEMPLATES: {
-			OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
+			OS::get_singleton()->shell_open("file://" + ProjectSettings::get_singleton()->get_resource_path().plus_file("android"));
 		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
@@ -6385,7 +6385,7 @@ EditorNode::EditorNode() {
 	execute_outputs = memnew(RichTextLabel);
 	execute_output_dialog = memnew(AcceptDialog);
 	execute_output_dialog->add_child(execute_outputs);
-	execute_output_dialog->set_title(TTR(""));
+	execute_output_dialog->set_title("");
 	gui_base->add_child(execute_output_dialog);
 
 	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
