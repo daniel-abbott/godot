@@ -71,8 +71,7 @@ class SnapDialog : public ConfirmationDialog {
 	SpinBox *rotation_step;
 
 public:
-	SnapDialog() :
-			ConfirmationDialog() {
+	SnapDialog() {
 		const int SPIN_BOX_GRID_RANGE = 256;
 		const int SPIN_BOX_ROTATION_RANGE = 360;
 		Label *label;
@@ -490,8 +489,6 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			r_items.push_back(res);
 		}
 	}
-
-	return;
 }
 
 void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items) {
@@ -1999,11 +1996,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		return true;
 	}
 
-	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
-		// Accept the key event in any case
-		return true;
-	}
-	return false;
+	return (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)); // Accept the key event in any case
 }
 
 bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
@@ -3618,7 +3611,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	bool constrain_editor_view = bool(EditorSettings::get_singleton()->get("editors/2d/constrain_editor_view"));
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		if (constrain_editor_view && ABS(begin.y - previous_update_view_offset.y) < ABS(begin.y - view_offset.y)) {
+		float centered = -(size.y / 2) / zoom + screen_rect.y / 2;
+		if (constrain_editor_view && ABS(centered - previous_update_view_offset.y) < ABS(centered - view_offset.y)) {
 			view_offset.y = previous_update_view_offset.y;
 		}
 
@@ -3638,7 +3632,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		if (constrain_editor_view && ABS(begin.x - previous_update_view_offset.x) < ABS(begin.x - view_offset.x)) {
+		float centered = -(size.x / 2) / zoom + screen_rect.x / 2;
+		if (constrain_editor_view && ABS(centered - previous_update_view_offset.x) < ABS(centered - view_offset.x)) {
 			view_offset.x = previous_update_view_offset.x;
 		}
 
@@ -4341,7 +4336,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				if (!n2d->get_parent_item())
 					continue;
-				if (n2d->has_meta("_edit_bone_") && (bool)n2d->get_meta("_edit_bone_") == true)
+				if (n2d->has_meta("_edit_bone_") && n2d->get_meta("_edit_bone_"))
 					continue;
 
 				undo_redo->add_do_method(n2d, "set_meta", "_edit_bone_", true);
@@ -4391,7 +4386,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
-				if (canvas_item->has_meta("_edit_ik_") && (bool)canvas_item->get_meta("_edit_ik_") == true)
+				if (canvas_item->has_meta("_edit_ik_") && canvas_item->get_meta("_edit_ik_"))
 					continue;
 
 				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_ik_", true);
