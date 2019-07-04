@@ -41,7 +41,7 @@ def copy_file(src_dir, dst_dir, name):
     dst_dir = Dir(dst_dir).abspath
 
     if not os.path.isdir(dst_dir):
-        os.mkdir(dst_dir)
+        os.makedirs(dst_dir)
 
     copy(src_path, dst_dir)
 
@@ -64,6 +64,10 @@ def configure(env, env_mono):
     if is_android and tools_enabled:
         # TODO: Implement this. We have to add the data directory to the apk, concretely the Api and Tools folders.
         raise RuntimeError('This module does not currently support building for android with tools enabled')
+
+    if is_android and mono_static:
+        # When static linking and doing something that requires libmono-native, we get a dlopen error as libmono-native seems to depend on libmonosgen-2.0
+        raise RuntimeError('Linking Mono statically is not currently supported on Android')
 
     if (os.getenv('MONO32_PREFIX') or os.getenv('MONO64_PREFIX')) and not mono_prefix:
         print("WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead")
@@ -173,7 +177,7 @@ def configure(env, env_mono):
             if not mono_lib:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-            env_mono.Append(CPPFLAGS=['-D_REENTRANT'])
+            env_mono.Append(CPPDEFINES=['_REENTRANT'])
 
             if mono_static:
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
@@ -188,7 +192,7 @@ def configure(env, env_mono):
             if is_apple:
                 env.Append(LIBS=['iconv', 'pthread'])
             elif is_android:
-                env.Append(LIBS=['m', 'dl'])
+                pass # Nothing
             else:
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
 
@@ -236,6 +240,14 @@ def configure(env, env_mono):
             mono_root = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
 
         make_template_dir(env, mono_root)
+    elif not tools_enabled and is_android:
+        # Compress Android Mono Config
+        from . import make_android_mono_config
+        config_file_path = os.path.join(mono_root, 'etc', 'mono', 'config')
+        make_android_mono_config.generate_compressed_config(config_file_path, 'mono_gd/')
+
+        # Copy the required shared libraries
+        copy_mono_shared_libs(env, mono_root, None)
 
     if copy_mono_root:
         if not mono_root:
@@ -270,9 +282,8 @@ def make_template_dir(env, mono_root):
 
     # Copy etc/mono/
 
-    if platform != 'android':
-        template_mono_config_dir = os.path.join(template_mono_root_dir, 'etc', 'mono')
-        copy_mono_etc_dir(mono_root, template_mono_config_dir, env['platform'])
+    template_mono_config_dir = os.path.join(template_mono_root_dir, 'etc', 'mono')
+    copy_mono_etc_dir(mono_root, template_mono_config_dir, env['platform'])
 
     # Copy the required shared libraries
 
@@ -398,7 +409,7 @@ def configure_for_mono_version(env, mono_version):
             raise RuntimeError("Mono JIT compiler version not found; specify one manually with the 'MONO_VERSION' environment variable")
     print('Found Mono JIT compiler version: ' + str(mono_version))
     if mono_version >= LooseVersion('5.12.0'):
-        env.Append(CPPFLAGS=['-DHAS_PENDING_EXCEPTIONS'])
+        env.Append(CPPDEFINES=['HAS_PENDING_EXCEPTIONS'])
 
 
 def pkgconfig_try_find_mono_root(mono_lib_names, sharedlib_ext):
