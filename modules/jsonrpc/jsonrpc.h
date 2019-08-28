@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arkit_session_delegate.h                                             */
+/*  jsonrpc.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#ifndef GODOT_JSON_RPC_H
+#define GODOT_JSON_RPC_H
 
-#import <ARKit/ARKit.h>
-#import <UIKit/UIKit.h>
+#include "core/object.h"
+#include "core/variant.h"
 
-class ARKitInterface;
+class JSONRPC : public Object {
+	GDCLASS(JSONRPC, Object)
 
-@interface ARKitSessionDelegate : NSObject <ARSessionDelegate> {
-	ARKitInterface *arkit_interface;
-}
+	Map<String, Object *> method_scopes;
 
-@property(nonatomic) ARKitInterface *arkit_interface;
+protected:
+	static void _bind_methods();
 
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
-@end
+public:
+	JSONRPC();
+	~JSONRPC();
 
-#endif /* !ARKIT_SESSION_DELEGATE_H */
+	enum ErrorCode {
+		ParseError = -32700,
+		InvalidRequest = -32600,
+		MethodNotFound = -32601,
+		InvalidParams = -32602,
+		InternalError = -32603,
+	};
+
+	Dictionary make_response_error(int p_code, const String &p_message, const Variant &p_id = Variant()) const;
+	Dictionary make_response(const Variant &p_value, const Variant &p_id);
+	Dictionary make_notification(const String &p_method, const Variant &p_params);
+	Dictionary make_request(const String &p_method, const Variant &p_params, const Variant &p_id);
+
+	Variant process_action(const Variant &p_action, bool p_process_arr_elements = false);
+	String process_string(const String &p_input);
+
+	void set_scope(const String &p_scope, Object *p_obj);
+};
+
+VARIANT_ENUM_CAST(JSONRPC::ErrorCode);
+
+#endif

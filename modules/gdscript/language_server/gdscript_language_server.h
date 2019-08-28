@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arkit_session_delegate.h                                             */
+/*  gdscript_language_server.h                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#ifndef GDSCRIPT_LANGUAGE_SERVER_H
+#define GDSCRIPT_LANGUAGE_SERVER_H
 
-#import <ARKit/ARKit.h>
-#import <UIKit/UIKit.h>
+#include "../gdscript_parser.h"
+#include "editor/editor_plugin.h"
+#include "gdscript_language_protocol.h"
 
-class ARKitInterface;
+class GDScriptLanguageServer : public EditorPlugin {
+	GDCLASS(GDScriptLanguageServer, EditorPlugin);
 
-@interface ARKitSessionDelegate : NSObject <ARSessionDelegate> {
-	ARKitInterface *arkit_interface;
-}
+	GDScriptLanguageProtocol protocol;
 
-@property(nonatomic) ARKitInterface *arkit_interface;
+	Thread *thread;
+	bool thread_exit;
+	static void thread_main(void *p_userdata);
 
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
-@end
+private:
+	void _notification(int p_what);
+	void _iteration();
 
-#endif /* !ARKIT_SESSION_DELEGATE_H */
+public:
+	Error parse_script_file(const String &p_path);
+	GDScriptLanguageServer();
+	void start();
+	void stop();
+};
+
+void register_lsp_types();
+
+#endif // GDSCRIPT_LANGUAGE_SERVER_H

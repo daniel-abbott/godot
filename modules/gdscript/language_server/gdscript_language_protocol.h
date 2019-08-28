@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arkit_session_delegate.h                                             */
+/*  gdscript_language_protocol.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#ifndef GDSCRIPT_PROTOCAL_SERVER_H
+#define GDSCRIPT_PROTOCAL_SERVER_H
 
-#import <ARKit/ARKit.h>
-#import <UIKit/UIKit.h>
+#include "gdscript_text_document.h"
+#include "gdscript_workspace.h"
+#include "lsp.hpp"
+#include "modules/jsonrpc/jsonrpc.h"
+#include "modules/websocket/websocket_peer.h"
+#include "modules/websocket/websocket_server.h"
 
-class ARKitInterface;
+class GDScriptLanguageProtocol : public JSONRPC {
+	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
 
-@interface ARKitSessionDelegate : NSObject <ARSessionDelegate> {
-	ARKitInterface *arkit_interface;
-}
+	enum LSPErrorCode {
+		RequestCancelled = -32800,
+		ContentModified = -32801,
+	};
 
-@property(nonatomic) ARKitInterface *arkit_interface;
+	static GDScriptLanguageProtocol *singleton;
 
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
-@end
+	HashMap<int, Ref<WebSocketPeer> > clients;
+	WebSocketServer *server;
+	int lastest_client_id;
 
-#endif /* !ARKIT_SESSION_DELEGATE_H */
+	Ref<GDScriptTextDocument> text_document;
+	Ref<GDScriptWorkspace> workspace;
+
+	void on_data_received(int p_id);
+	void on_client_connected(int p_id, const String &p_protocal);
+	void on_client_disconnected(int p_id, bool p_was_clean_close);
+
+	String process_message(const String &p_text);
+	String format_output(const String &p_text);
+
+	bool _initialized;
+
+protected:
+	static void _bind_methods();
+
+	Dictionary initialize(const Dictionary &p_params);
+	void initialized(const Variant &p_params);
+
+public:
+	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
+	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
+	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
+
+	void poll();
+	Error start(int p_port);
+	void stop();
+
+	void notify_all_clients(const String &p_method, const Variant &p_params = Variant());
+	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client = -1);
+
+	bool is_smart_resolve_enabled() const;
+	bool is_goto_native_symbols_enabled() const;
+
+	GDScriptLanguageProtocol();
+	~GDScriptLanguageProtocol();
+};
+
+#endif

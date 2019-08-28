@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arkit_session_delegate.h                                             */
+/*  gdscript_text_document.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#ifndef GDSCRIPT_TEXT_DOCUMENT_H
+#define GDSCRIPT_TEXT_DOCUMENT_H
 
-#import <ARKit/ARKit.h>
-#import <UIKit/UIKit.h>
+#include "core/os/file_access.h"
+#include "core/reference.h"
+#include "lsp.hpp"
 
-class ARKitInterface;
+class GDScriptTextDocument : public Reference {
+	GDCLASS(GDScriptTextDocument, Reference)
+protected:
+	static void _bind_methods();
 
-@interface ARKitSessionDelegate : NSObject <ARSessionDelegate> {
-	ARKitInterface *arkit_interface;
-}
+	FileAccess *file_checker;
 
-@property(nonatomic) ARKitInterface *arkit_interface;
+	void didOpen(const Variant &p_param);
+	void didChange(const Variant &p_param);
 
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
-@end
+	void sync_script_content(const String &p_path, const String &p_content);
+	void show_native_symbol_in_editor(const String &p_symbol_id);
 
-#endif /* !ARKIT_SESSION_DELEGATE_H */
+	Array native_member_completions;
+
+private:
+	lsp::TextDocumentItem load_document_item(const Variant &p_param);
+
+public:
+	Array documentSymbol(const Dictionary &p_params);
+	Array completion(const Dictionary &p_params);
+	Dictionary resolve(const Dictionary &p_params);
+	Array foldingRange(const Dictionary &p_params);
+	Array codeLens(const Dictionary &p_params);
+	Variant documentLink(const Dictionary &p_params);
+	Array colorPresentation(const Dictionary &p_params);
+	Variant hover(const Dictionary &p_params);
+	Array definition(const Dictionary &p_params);
+
+	void initialize();
+
+	GDScriptTextDocument();
+	virtual ~GDScriptTextDocument();
+};
+
+#endif

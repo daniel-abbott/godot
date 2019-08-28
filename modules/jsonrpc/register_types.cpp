@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arkit_session_delegate.h                                             */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,23 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARKIT_SESSION_DELEGATE_H
-#define ARKIT_SESSION_DELEGATE_H
+#include "register_types.h"
+#include "core/class_db.h"
+#include "jsonrpc.h"
 
-#import <ARKit/ARKit.h>
-#import <UIKit/UIKit.h>
-
-class ARKitInterface;
-
-@interface ARKitSessionDelegate : NSObject <ARSessionDelegate> {
-	ARKitInterface *arkit_interface;
+void register_jsonrpc_types() {
+	ClassDB::register_class<JSONRPC>();
 }
 
-@property(nonatomic) ARKitInterface *arkit_interface;
-
-- (void)session:(ARSession *)session didAddAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didRemoveAnchors:(NSArray<ARAnchor *> *)anchors;
-- (void)session:(ARSession *)session didUpdateAnchors:(NSArray<ARAnchor *> *)anchors;
-@end
-
-#endif /* !ARKIT_SESSION_DELEGATE_H */
+void unregister_jsonrpc_types() {
+}
