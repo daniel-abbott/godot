@@ -647,7 +647,7 @@ void TextEdit::_notification(int p_what) {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = sqrt(target_y * target_y);
-				// To ensure minimap is responsive overide the speed setting.
+				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
 				if (Math::abs(vel) >= dist) {
@@ -6282,7 +6282,7 @@ void TextEdit::_confirm_completion() {
 	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
 
 	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
-		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+		_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
 	if (last_completion_char == '(') {
