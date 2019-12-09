@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "servers/visual_server.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -106,6 +107,17 @@ public:
 	enum VideoDriver {
 		VIDEO_DRIVER_GLES3,
 		VIDEO_DRIVER_GLES2,
+	};
+
+	enum TextureFlags {
+		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
+		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
+		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
+		FLAG_ANISOTROPIC_FILTER = VisualServer::TEXTURE_FLAG_ANISOTROPIC_FILTER,
+		FLAG_CONVERT_TO_LINEAR = VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
+		FLAG_VIDEO_SURFACE = VisualServer::TEXTURE_FLAG_USED_FOR_STREAMING,
+		FLAGS_DEFAULT = FLAG_MIPMAPS | FLAG_REPEAT | FLAG_FILTER,
+		FLAG_MIRRORED_REPEAT = VisualServer::TEXTURE_FLAG_MIRRORED_REPEAT
 	};
 
 	enum PowerState {
@@ -256,6 +268,7 @@ public:
 	void print_all_resources(const String &p_to_file);
 	void print_all_textures_by_size();
 	void print_resources_by_type(const Vector<String> &p_types);
+	void override_all_texture_flags(uint32_t p_flags);
 
 	bool has_touchscreen_ui_hint() const;
 

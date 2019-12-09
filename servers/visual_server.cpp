@@ -59,7 +59,7 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 	ERR_FAIL_COND_V(!texture.is_valid(), texture);
 
 	texture_set_data(texture, p_image);
-
+	
 	return texture;
 }
 
@@ -2407,6 +2407,10 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
+	GLOBAL_DEF("rendering/quality/filters/global_texture_filter", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/global_texture_filter", PropertyInfo(Variant::INT, "rendering/quality/filters/global_texture_filter", PROPERTY_HINT_ENUM, "Disabled,GL_NEAREST,GL_LINEAR"));
+	GLOBAL_DEF("rendering/quality/filters/global_mipmaps", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/global_mipmaps", PropertyInfo(Variant::INT, "rendering/quality/filters/global_mipmaps", PROPERTY_HINT_ENUM, "Disabled,Mips On,Mips Off"));
 }
 
 VisualServer::~VisualServer() {
