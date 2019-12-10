@@ -91,6 +91,15 @@ public:
 		TEXTURE_FLAGS_DEFAULT = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_FILTER
 	};
 
+	enum TextureFilterLevel {
+		NEAREST = TEXTURE_FLAG_REPEAT,
+		NEAREST_MIPMAP_NEAREST = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS,
+		NEAREST_MIPMAP_LINEAR = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_ANISOTROPIC_FILTER,
+		LINEAR = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_FILTER,
+		LINEAR_MIPMAP_NEAREST = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_FILTER | TEXTURE_FLAG_MIPMAPS,
+		LINEAR_MIPMAP_LINEAR = TEXTURE_FLAG_REPEAT | TEXTURE_FLAG_FILTER | TEXTURE_FLAG_MIPMAPS | TEXTURE_FLAG_ANISOTROPIC_FILTER
+	};
+
 	enum TextureType {
 		TEXTURE_TYPE_2D,
 		TEXTURE_TYPE_CUBEMAP,
@@ -167,6 +176,8 @@ public:
 
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
+
+	void set_global_filtering_level(TextureFilterLevel p_level);
 
 	/* SKY API */
 
@@ -1057,6 +1068,7 @@ public:
 // make variant understand the enums
 VARIANT_ENUM_CAST(VisualServer::CubeMapSide);
 VARIANT_ENUM_CAST(VisualServer::TextureFlags);
+VARIANT_ENUM_CAST(VisualServer::TextureFilterLevel);
 VARIANT_ENUM_CAST(VisualServer::ShaderMode);
 VARIANT_ENUM_CAST(VisualServer::ArrayType);
 VARIANT_ENUM_CAST(VisualServer::ArrayFormat);

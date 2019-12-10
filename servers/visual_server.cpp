@@ -63,6 +63,21 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 	return texture;
 }
 
+void VisualServer::set_global_filtering_level(TextureFilterLevel p_level) {
+
+	// switch(p_level) {
+	// 	case NEAREST	: print_line("Nearest"); 	break;
+	// 	default			: print_line("None found"); break;
+	// }
+
+	print_line("yey");
+
+	// List<RID> tex_refs;
+
+	// List<Ref<Resource> > rsrc;
+	// ResourceCache::get_cached_resources(%rsrc);
+}
+
 Array VisualServer::_texture_debug_usage_bind() {
 
 	List<TextureInfo> list;
@@ -1669,6 +1684,8 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
 	ClassDB::bind_method(D_METHOD("textures_keep_original", "enable"), &VisualServer::textures_keep_original);
+
+	ClassDB::bind_method(D_METHOD("set_global_filtering_level", "level"), &VisualServer::set_global_filtering_level);
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
 	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);
@@ -2076,6 +2093,13 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_MIRRORED_REPEAT);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_USED_FOR_STREAMING);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAGS_DEFAULT);
+
+	BIND_ENUM_CONSTANT(NEAREST);
+	BIND_ENUM_CONSTANT(NEAREST_MIPMAP_NEAREST);
+	BIND_ENUM_CONSTANT(NEAREST_MIPMAP_LINEAR);
+	BIND_ENUM_CONSTANT(LINEAR);
+	BIND_ENUM_CONSTANT(LINEAR_MIPMAP_NEAREST);
+	BIND_ENUM_CONSTANT(LINEAR_MIPMAP_LINEAR);
 
 	BIND_ENUM_CONSTANT(SHADER_SPATIAL);
 	BIND_ENUM_CONSTANT(SHADER_CANVAS_ITEM);

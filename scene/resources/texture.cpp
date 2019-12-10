@@ -185,7 +185,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 }
 
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
-
+	
 	flags = p_flags;
 	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, 0, p_format, VS::TEXTURE_TYPE_2D, p_flags);
 	format = p_format;

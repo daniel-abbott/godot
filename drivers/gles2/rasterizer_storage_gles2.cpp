@@ -679,23 +679,38 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->ignore_mipmaps = compressed && !img->has_mipmaps();
 
+	//TODO: Set texture filtering override up to re-apply on settings change. Could also rope mipmaps and filter types into these:
+	// GL_NEAREST, GL_LINEAR, GL_NEAREST_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR
+
 	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && !texture->ignore_mipmaps)
 		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
 	else {
-		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		} else {
+		if (config.global_texture_filter == 0) {
+			if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+				glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			} else {
+				glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+		} else if (config.global_texture_filter == 1) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		}
 	}
 
-	if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+	if (config.global_texture_filter == 0) {
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 
-		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
+			glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
 
+		} else {
+
+			glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
+		}
+	} else if (config.global_texture_filter == 1) {
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	} else {
-
-		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
 	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
@@ -929,20 +944,29 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, config.use_fast_texture_filter ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
 
 	} else {
-		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		} else {
+		if (config.global_texture_filter == 0) {
+			if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+				glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			} else {
+				glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+		} else if (config.global_texture_filter == 1) {
 			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		}
 	}
 
-	if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
-
-		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
-
+	if (config.global_texture_filter == 0) {
+		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
+		} else {
+			glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
+		}
+	} else if (config.global_texture_filter == 1) {
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	} else {
-
-		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 }
 
@@ -4630,14 +4654,22 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
 
-		if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+		if (config.global_texture_filter == 0) {
+			if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		} else {
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			} else {
 
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+		} else if (config.global_texture_filter == 1) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		} else {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		}
 
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -6110,6 +6142,7 @@ void RasterizerStorageGLES2::initialize() {
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
+	config.global_texture_filter = GLOBAL_GET("rendering/quality/filters/global_texture_filter");
 }
 
 void RasterizerStorageGLES2::finalize() {
