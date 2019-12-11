@@ -65,17 +65,21 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 
 void VisualServer::set_global_filtering_level(TextureFilterLevel p_level) {
 
-	// switch(p_level) {
-	// 	case NEAREST	: print_line("Nearest"); 	break;
-	// 	default			: print_line("None found"); break;
-	// }
+	// print_line(itos(uint32_t(p_level)));
 
-	print_line("yey");
+	List<Ref<Resource> > rsrc;
+	ResourceCache::get_cached_resources(&rsrc);
 
-	// List<RID> tex_refs;
+	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
 
-	// List<Ref<Resource> > rsrc;
-	// ResourceCache::get_cached_resources(%rsrc);
+		if (!E->get()->is_class("Texture"))
+			continue;
+
+		RID tex_rid = E->get()->get_rid();
+		VisualServer::get_singleton()->texture_set_flags(tex_rid, uint32_t(p_level));
+	}
+
+	rsrc.clear();
 }
 
 Array VisualServer::_texture_debug_usage_bind() {
