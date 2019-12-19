@@ -268,9 +268,6 @@ public:
 	void print_all_resources(const String &p_to_file);
 	void print_all_textures_by_size();
 	void print_resources_by_type(const Vector<String> &p_types);
-	void force_bilinear_filtering(bool p_enable);
-	void force_mipmaps(bool p_enable);
-	void override_all_texture_flags(uint32_t p_flags);
 
 	bool has_touchscreen_ui_hint() const;
 

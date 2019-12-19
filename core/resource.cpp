@@ -36,8 +36,6 @@
 #include "core/script_language.h"
 #include "scene/main/node.h" //only so casting works
 
-#include <stdio.h>
-
 void Resource::emit_changed() {
 
 	emit_signal(CoreStringNames::get_singleton()->changed);

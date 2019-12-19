@@ -76,7 +76,26 @@ void VisualServer::set_global_filtering_level(TextureFilterLevel p_level) {
 			continue;
 
 		RID tex_rid = E->get()->get_rid();
+		// uint32_t flags = VisualServer::get_singleton()->texture_get_flags(tex_rid);
 		VisualServer::get_singleton()->texture_set_flags(tex_rid, uint32_t(p_level));
+	}
+
+	rsrc.clear();
+}
+
+void VisualServer::override_all_texture_flags(uint32_t p_flags) {
+
+	List<Ref<Resource> > rsrc;
+	ResourceCache::get_cached_resources(&rsrc);
+
+	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
+
+		if (!E->get()->is_class("Texture"))
+			continue;
+
+		// print_line(String(E->get()->to_string()));
+		RID tex_rid = E->get()->get_rid();
+		VisualServer::get_singleton()->texture_set_flags(tex_rid, p_flags);
 	}
 
 	rsrc.clear();

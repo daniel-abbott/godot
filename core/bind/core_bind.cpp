@@ -992,65 +992,6 @@ void _OS::print_all_textures_by_size() {
 	}
 }
 
-void _OS::force_bilinear_filtering(bool p_enable) {
-
-	List<RID> tex_refs;
-
-	uint32_t flags = p_enable ? FLAG_FILTER : FLAGS_DEFAULT;
-
-	List<Ref<Resource> > rsrc;
-	ResourceCache::get_cached_resources(&rsrc);
-
-	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
-
-		if (!E->get()->is_class("Texture"))
-			continue;
-
-		// print_line(String(E->get()->to_string()));
-		RID tex_rid = E->get()->get_rid();
-		tex_refs.push_back(tex_rid);
-	}
-
-	for (List<RID>::Element *E = tex_refs.front(); E; E = E->next()) {
-		
-		uint32_t current_flags = VisualServer::get_singleton()->texture_get_flags(E->get());
-		VisualServer::get_singleton()->texture_set_flags(E->get(), current_flags | flags);
-		print_line(String(itos(current_flags) + "|" + itos(flags) + "=" + itos(current_flags | flags)));
-	}
-
-	rsrc.clear();
-	tex_refs.clear();
-}
-
-void _OS::force_mipmaps(bool p_enable) {
-	print_line("Not implemented!");
-}
-
-void _OS::override_all_texture_flags(uint32_t p_flags) {
-
-	List<RID> tex_refs;
-
-	List<Ref<Resource> > rsrc;
-	ResourceCache::get_cached_resources(&rsrc);
-
-	for (List<Ref<Resource> >::Element *E = rsrc.front(); E; E = E->next()) {
-
-		if (!E->get()->is_class("Texture"))
-			continue;
-
-		// print_line(String(E->get()->to_string()));
-		RID tex_rid = E->get()->get_rid();
-		tex_refs.push_back(tex_rid);
-	}
-
-	for (List<RID>::Element *E = tex_refs.front(); E; E = E->next()) {
-		
-		VisualServer::get_singleton()->texture_set_flags(E->get(), p_flags);
-	}
-	rsrc.clear();
-	tex_refs.clear();
-}
-
 void _OS::print_resources_by_type(const Vector<String> &p_types) {
 
 	Map<String, int> type_count;
@@ -1370,8 +1311,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_height"), &_OS::get_virtual_keyboard_height);
 	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_OS::print_resources_in_use, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &_OS::print_all_resources, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("force_bilinear_filtering", "p_enable"), &_OS::force_bilinear_filtering, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("override_all_texture_flags", "p_flags"), &_OS::override_all_texture_flags, DEFVAL(FLAGS_DEFAULT));
 
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &_OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &_OS::get_static_memory_peak_usage);
