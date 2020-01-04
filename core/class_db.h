@@ -114,6 +114,7 @@ public:
 
 		APIType api;
 		ClassInfo *inherits_ptr;
+		void *class_ptr;
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName> > enum_map;
@@ -177,6 +178,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &creator<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
@@ -188,6 +190,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		//nothing
 	}
 
@@ -206,6 +209,7 @@ public:
 		ERR_FAIL_COND(!t);
 		t->creation_func = &_create_ptr_func<T>;
 		t->exposed = true;
+		t->class_ptr = T::get_class_ptr_static();
 		T::register_custom_data_to_otdb();
 	}
 
@@ -291,6 +295,15 @@ public:
 		const Variant *ptr[7] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7 };
 
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 7);
+	}
+
+	template <class N, class M>
+	static MethodBind *bind_method(N p_method_name, M p_method, const Variant &p_def1, const Variant &p_def2, const Variant &p_def3, const Variant &p_def4, const Variant &p_def5, const Variant &p_def6, const Variant &p_def7, const Variant &p_def8) {
+
+		MethodBind *bind = create_method_bind(p_method);
+		const Variant *ptr[8] = { &p_def1, &p_def2, &p_def3, &p_def4, &p_def5, &p_def6, &p_def7, &p_def8 };
+
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, ptr, 8);
 	}
 
 	template <class M>
