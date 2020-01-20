@@ -63,9 +63,7 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 	return texture;
 }
 
-void VisualServer::set_global_filtering_level(TextureFilterLevel p_level) {
-
-	// print_line(itos(uint32_t(p_level)));
+void VisualServer::set_global_filtering_level(TextureFilterLevel p_level, PoolIntArray exempt_rids) {
 
 	List<Ref<Resource> > rsrc;
 	ResourceCache::get_cached_resources(&rsrc);
@@ -76,8 +74,18 @@ void VisualServer::set_global_filtering_level(TextureFilterLevel p_level) {
 			continue;
 
 		RID tex_rid = E->get()->get_rid();
-		// uint32_t flags = VisualServer::get_singleton()->texture_get_flags(tex_rid);
-		VisualServer::get_singleton()->texture_set_flags(tex_rid, uint32_t(p_level));
+
+		if (exempt_rids.size() != 0) {
+			for (int i = 0; i < exempt_rids.size(); i++) {
+				if ((int)tex_rid.get_id() == exempt_rids[i]) {
+					continue;
+				} else {
+					VisualServer::get_singleton()->texture_set_flags(tex_rid, uint32_t(p_level));
+				}
+			}
+		} else {
+			VisualServer::get_singleton()->texture_set_flags(tex_rid, uint32_t(p_level));
+		}
 	}
 
 	rsrc.clear();
@@ -1708,7 +1716,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
 	ClassDB::bind_method(D_METHOD("textures_keep_original", "enable"), &VisualServer::textures_keep_original);
 
-	ClassDB::bind_method(D_METHOD("set_global_filtering_level", "level"), &VisualServer::set_global_filtering_level);
+	ClassDB::bind_method(D_METHOD("set_global_filtering_level", "level", "exempt_rids"), &VisualServer::set_global_filtering_level);
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
 	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);

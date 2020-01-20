@@ -177,7 +177,7 @@ public:
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
-	void set_global_filtering_level(TextureFilterLevel p_level);
+	void set_global_filtering_level(TextureFilterLevel p_level, PoolIntArray exempt_rids);
 	void override_all_texture_flags(uint32_t p_flags);
 
 	/* SKY API */
